@@ -57,15 +57,15 @@ where
 
 fn sign_sha256sums(path: &PathBuf) {
     let key_base64 = match std::env::var("TAURI_SIGNING_PRIVATE_KEY") {
-        Ok(key) => key,
-        Err(_) => {
+        Ok(key) if !key.is_empty() => key,
+        _ => {
             std::fs::write(path.with_extension("sig"), "NOT SIGNED (fork)").unwrap();
             return;
         }
     };
     let password = match std::env::var("TAURI_SIGNING_PRIVATE_KEY_PASSWORD") {
-        Ok(pwd) => pwd,
-        Err(_) => {
+        Ok(pwd) if !pwd.is_empty() => pwd,
+        _ => {
             std::fs::write(path.with_extension("sig"), "NOT SIGNED (fork)").unwrap();
             return;
         }
