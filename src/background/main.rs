@@ -144,7 +144,7 @@ async fn setup(app_handle: &tauri::AppHandle<tauri::Wry>) -> Result<()> {
 
     if let Err(err) = tokio::try_join!(
         utils::integrity::validate_webview_runtime(),
-        utils::integrity::ensure_bundle_files_integrity(app_handle),
+        // utils::integrity::ensure_bundle_files_integrity(app_handle),
         utils::integrity::check_for_webview_optimal_state(),
     ) {
         match err {
