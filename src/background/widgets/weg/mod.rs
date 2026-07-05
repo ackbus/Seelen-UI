@@ -56,8 +56,7 @@ impl SeelenWeg {
 
     pub fn restore_native_taskbar() -> Result<()> {
         for hwnd in get_taskbars_handles()? {
-            // AppBarData::from_handle(hwnd).set_state(AppBarDataState::AlwaysOnTop); // ← 이 줄 삭제
-            WindowsApi::show_window_async(hwnd, SW_SHOWNORMAL)?; // 숨김만 해제, auto-hide 상태 유지
+            WindowsApi::show_window_async(hwnd, SW_SHOWNORMAL)?;
         }
         Ok(())
     }
