@@ -117,6 +117,21 @@ impl MonitorManager {
             }
             Ok(())
         });
+
+        // Poll for display changes every 3s (catches virtual monitor changes)
+        {
+            use tokio::time::interval;
+            let handle = crate::get_tokio_handle();
+            handle.spawn(async {
+                let mut timer = interval(std::time::Duration::from_secs(3));
+                timer.tick().await;
+                loop {
+                    timer.tick().await;
+                    Self::check_for_display_changes().log_error();
+                }
+            });
+        }
+
         Ok(())
     }
 
