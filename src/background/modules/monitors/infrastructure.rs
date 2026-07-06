@@ -26,6 +26,18 @@ fn get_monitor_manager() -> &'static MonitorManager {
             let mut last = String::new();
             loop {
                 timer.tick().await;
+                let sentinel = std::env::temp_dir().join("seelen_trigger_monitors");
+                if sentinel.exists() {
+                    let _ = std::fs::remove_file(&sentinel);
+                    if let Ok(monitors) = _get_connected_monitors() {
+                        let current = serde_json::to_string(&monitors).unwrap_or_default();
+                        if current != last {
+                            emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
+                            last = current;
+                        }
+                    }
+                    continue;
+                }
                 if let Ok(monitors) = _get_connected_monitors() {
                     let current = serde_json::to_string(&monitors).unwrap_or_default();
                     if current != last {
@@ -43,7 +55,9 @@ fn get_monitor_manager() -> &'static MonitorManager {
 pub fn _get_connected_monitors() -> Result<Vec<PhysicalMonitor>> {
     let mut monitors = Vec::new();
     for m in MonitorEnumerator::enumerate_win32()? {
-        monitors.push(m.try_into()?);
+        if let Ok(pm) = m.try_into() {
+            monitors.push(pm);
+        }
     }
     Ok(monitors)
 }
