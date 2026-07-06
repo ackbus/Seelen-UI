@@ -1,5 +1,7 @@
 use std::sync::Once;
+
 use seelen_core::{handlers::SeelenEvent, system_state::PhysicalMonitor};
+
 use crate::{
     app::emit_to_webviews, error::Result, modules::monitors::MonitorManager,
     windows_api::MonitorEnumerator,
