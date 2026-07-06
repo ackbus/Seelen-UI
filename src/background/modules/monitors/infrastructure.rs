@@ -31,10 +31,8 @@ fn get_monitor_manager() -> &'static MonitorManager {
                     let _ = std::fs::remove_file(&sentinel);
                     if let Ok(monitors) = _get_connected_monitors() {
                         let current = serde_json::to_string(&monitors).unwrap_or_default();
-                        if current != last {
-                            emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
-                            last = current;
-                        }
+                        emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
+                        last = current;
                     }
                     continue;
                 }
