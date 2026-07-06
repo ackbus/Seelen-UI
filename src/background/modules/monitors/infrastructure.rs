@@ -22,27 +22,17 @@ fn get_monitor_manager() -> &'static MonitorManager {
         });
 
         crate::get_tokio_handle().spawn(async {
-            let mut timer = tokio::time::interval(std::time::Duration::from_secs(5));
-            let mut last = String::new();
+            let mut timer = tokio::time::interval(std::time::Duration::from_secs(3));
             loop {
                 timer.tick().await;
                 let sentinel = std::env::temp_dir().join("seelen_trigger_monitors");
-                if sentinel.exists() {
-                    let _ = std::fs::remove_file(&sentinel);
-                    if let Ok(monitors) = _get_connected_monitors() {
-                        let current = serde_json::to_string(&monitors).unwrap_or_default();
-                        emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
-                        last = current;
-                    }
+                if !sentinel.exists() {
                     continue;
                 }
+                let _ = std::fs::remove_file(&sentinel);
+                log::debug!("Sentinel trigger detected");
                 if let Ok(monitors) = _get_connected_monitors() {
-                    let current = serde_json::to_string(&monitors).unwrap_or_default();
-                    if current != last {
-                        log::debug!("Monitor change detected via polling");
-                        emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
-                        last = current;
-                    }
+                    emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
                 }
             }
         });
