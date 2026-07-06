@@ -23,10 +23,16 @@ fn get_monitor_manager() -> &'static MonitorManager {
 
         crate::get_tokio_handle().spawn(async {
             let mut timer = tokio::time::interval(std::time::Duration::from_secs(5));
+            let mut last = String::new();
             loop {
                 timer.tick().await;
                 if let Ok(monitors) = _get_connected_monitors() {
-                    emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
+                    let current = serde_json::to_string(&monitors).unwrap_or_default();
+                    if current != last {
+                        log::debug!("Monitor change detected via polling");
+                        emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
+                        last = current;
+                    }
                 }
             }
         });
