@@ -134,7 +134,9 @@ impl Monitor {
                 }
             }
         }
-        Err("No WinRT DisplayTarget found for HMONITOR".into())
+        let fallback_id = MonitorId(format!("virtual-{:x}", self.0 .0 as u64));
+        let fallback_name = format!("Monitor {}", self.0 .0 as u64);
+        Ok((fallback_id, fallback_name))
     }
 
     pub fn stable_id(&self) -> Result<MonitorId> {
@@ -314,7 +316,5 @@ fn winrt_stable_id_for_target(
         let stable_id: MonitorId = target.StableMonitorId()?.to_string().into();
         return Ok((stable_id, friendly_name));
     }
-    let fallback_id = MonitorId(format!("virtual-{:x}", self.0 .0 as u64));
-    let fallback_name = format!("Monitor {}", self.0 .0 as u64);
-    Ok((fallback_id, fallback_name))
+    Err("No WinRT DisplayTarget found for HMONITOR".into())
 }
