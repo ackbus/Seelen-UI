@@ -1,7 +1,5 @@
 use std::sync::Once;
-
 use seelen_core::{handlers::SeelenEvent, system_state::PhysicalMonitor};
-
 use crate::{
     app::emit_to_webviews, error::Result, modules::monitors::MonitorManager,
     windows_api::MonitorEnumerator,
@@ -14,11 +12,20 @@ fn get_monitor_manager() -> &'static MonitorManager {
         if let Ok(monitors) = initial {
             log::debug!("Initial monitors: {monitors:#?}");
         }
-
         MonitorManager::subscribe(|_event| {
             if let Ok(monitors) = _get_connected_monitors() {
                 log::debug!("Monitors changed: {monitors:#?}");
                 emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
+            }
+        });
+
+        crate::get_tokio_handle().spawn(async {
+            let mut timer = tokio::time::interval(std::time::Duration::from_secs(5));
+            loop {
+                timer.tick().await;
+                if let Ok(monitors) = _get_connected_monitors() {
+                    emit_to_webviews(SeelenEvent::SystemMonitorsChanged, monitors);
+                }
             }
         });
     });
